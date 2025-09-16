@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Recorder Playground</title>
+</head>
+<body>
+  <h1>Recorder Server Playground</h1>
+  <button id="create">Create Meeting</button>
+  <p>Meeting ID: <span id="meetingId"></span></p>
+  <form id="uploadForm" style="display:none;" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <button type="submit">Upload</button>
+  </form>
+  <pre id="output"></pre>
+  <script>
+    const createBtn = document.getElementById('create');
+    const meetingSpan = document.getElementById('meetingId');
+    const form = document.getElementById('uploadForm');
+    const output = document.getElementById('output');
+    let meetingId = null;
+    createBtn.onclick = async () => {
+      const res = await fetch('/meetings', { method: 'POST' });
+      const data = await res.json();
+      meetingId = data.meeting_id;
+      meetingSpan.textContent = meetingId;
+      form.style.display = 'block';
+    };
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const fileInput = form.querySelector('input[name="file"]');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      const res = await fetch(`/meetings/${meetingId}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      output.textContent = JSON.stringify(data, null, 2);
+    };
+  </script>
+</body>
+</html>
